@@ -1,0 +1,37 @@
+/* ============================================================
+   Design tokens.
+   Change colours / sizes here and the whole overlay follows.
+   ============================================================ */
+
+:root{
+  /* Surfaces */
+  --bg:               transparent;      /* keep transparent for OBS */
+  --obsidian:         #0A0A0F;
+  --obsidian-glass:   rgba(10, 10, 15, 0.82);
+  --slot-empty-a:     #14141A;
+  --slot-empty-b:     #191920;
+
+  /* Text */
+  --ink:              #EDE7D9;
+  --ink-dim:          #9C9484;
+
+  /* Team colours */
+  --amber:            #E3A857;
+  --sapphire:         #5B8CE0;
+  --ban-red:          #8B2F3B;
+
+  /* Lines */
+  --hairline:         rgba(237, 231, 217, 0.12);
+
+  /* Type */
+  --font-display:     'Oswald', sans-serif;
+  --font-body:        'IBM Plex Sans', sans-serif;
+  --font-mono:        'IBM Plex Mono', monospace;
+
+  /* Sizing */
+  --portrait-pick:    44px;
+  --portrait-ban:     44px;
+  --ban-slot-width:   64px;
+  --stage-max-width:  1500px;
+  --radius:           3px;
+}

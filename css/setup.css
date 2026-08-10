@@ -1,0 +1,80 @@
+/* ============================================================
+   Connect screen
+   ============================================================ */
+
+#setup{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--obsidian);
+  z-index: 10;
+}
+
+#setup.hidden{ display: none; }
+
+#setup .panel{
+  width: 360px;
+  padding: 40px 48px;
+  text-align: center;
+  background: var(--obsidian-glass);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+}
+
+#setup h1{
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+#setup p{
+  margin: 0 0 24px;
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+
+#setup input{
+  width: 100%;
+  padding: 12px 14px;
+  background: #000;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+#setup button{
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--amber);
+  color: #1A1305;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#setup button:hover{ filter: brightness(1.1); }
+
+#setup .status{
+  min-height: 16px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+#setup .status.err{ color: var(--ban-red); }

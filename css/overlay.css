@@ -1,0 +1,275 @@
+/* ============================================================
+   Overlay: layout + components
+   ============================================================ */
+
+#overlay{
+  display: none;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 18px;
+}
+
+#overlay.visible{ display: block; }
+
+.stage{
+  max-width: var(--stage-max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lobby-name{
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* ---------------- Header ---------------- */
+
+.header{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+}
+
+.team-tag{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.team-tag.right{
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.team-logo{
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.team-tag .name{
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.team-amber .name{ color: var(--amber); }
+.team-sapphire .name{ color: var(--sapphire); }
+
+/* ---------------- Timer ---------------- */
+
+.sigil-wrap{
+  position: relative;
+  width: 118px;
+  height: 118px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sigil-wrap svg{
+  position: absolute;
+  inset: 0;
+}
+
+.sigil-ring-bg{ stroke: rgba(237, 231, 217, 0.08); }
+
+.sigil-ring{
+  stroke: var(--amber);
+  stroke-linecap: round;
+}
+
+.sigil-ring.sapphire-active{ stroke: var(--sapphire); }
+
+.sigil-center{
+  position: relative;
+  text-align: center;
+}
+
+.sigil-center .t{
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.sigil-center .phase{
+  margin-top: 3px;
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* ---------------- Bans ---------------- */
+
+.bans-row{
+  display: flex;
+  gap: 16px;
+}
+
+.bans-side{
+  flex: 1;
+  display: flex;
+  gap: 8px;
+}
+
+.bans-side.right{ justify-content: flex-end; }
+
+.ban-slot{
+  width: var(--ban-slot-width);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.ban-slot .portrait-wrap{
+  position: relative;
+  width: var(--portrait-ban);
+  height: var(--portrait-ban);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #1A1A22;
+  border: 1px solid var(--hairline);
+}
+
+.ban-slot img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.55);
+}
+
+/* Diagonal slash marking the hero as banned */
+.ban-slot .portrait-wrap::after{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 46%,
+    var(--ban-red) 48%,
+    var(--ban-red) 52%,
+    transparent 54%
+  );
+  opacity: 0.9;
+}
+
+.ban-slot .ban-name{
+  max-width: var(--ban-slot-width);
+  font-family: var(--font-display);
+  font-size: 9px;
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.ban-slot.empty .portrait-wrap{
+  background: repeating-linear-gradient(
+    45deg,
+    var(--slot-empty-a), var(--slot-empty-a) 4px,
+    var(--slot-empty-b) 4px, var(--slot-empty-b) 8px
+  );
+}
+
+.ban-slot.empty .portrait-wrap::after{ display: none; }
+
+/* ---------------- Picks ---------------- */
+
+.picks-row{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.picks-col{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picks-col.right .pick-card{
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.pick-card{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 8px 12px;
+  background: var(--obsidian-glass);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+}
+
+.pick-card.filled.amber-side{ border-left: 3px solid var(--amber); }
+.pick-card.filled.sapphire-side{ border-right: 3px solid var(--sapphire); }
+
+.pick-portrait{
+  width: var(--portrait-pick);
+  height: var(--portrait-pick);
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #1A1A22;
+}
+
+.pick-portrait img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pick-info .hname{
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.pick-info .horder{
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+}
+
+.pick-card.empty .pick-portrait{
+  background: repeating-linear-gradient(
+    45deg,
+    var(--slot-empty-a), var(--slot-empty-a) 4px,
+    var(--slot-empty-b) 4px, var(--slot-empty-b) 8px
+  );
+}
+
+.pick-card.empty .hname{
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+/* ---------------- Active turn (static highlight) ---------------- */
+
+.team-tag.active-turn .name{ text-decoration: underline; text-underline-offset: 4px; }
+
+.slot-active.pick-card{ border-style: dashed; }
+.slot-active .portrait-wrap{ border-style: dashed; }
+
+.amber-active.pick-card,
+.amber-active .portrait-wrap{ border-color: var(--amber); }
+
+.sapphire-active.pick-card,
+.sapphire-active .portrait-wrap{ border-color: var(--sapphire); }

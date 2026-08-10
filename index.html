@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Deadlock Draft Overlay</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/setup.css">
+<link rel="stylesheet" href="css/overlay.css">
+</head>
+<body>
+
+<!-- Connection screen: hidden once a draft is joined -->
+<div id="setup">
+  <div class="panel">
+    <h1>Deadlock Draft Overlay</h1>
+    <p>Enter the StatLocker draft code to connect</p>
+    <input id="codeInput" placeholder="e.g. HF5AMBAH" maxlength="12" autocomplete="off" />
+    <button id="connectBtn">Connect</button>
+    <div class="status" id="statusMsg"></div>
+  </div>
+</div>
+
+<!-- The actual overlay -->
+<div id="overlay">
+  <div class="stage">
+
+    <div class="lobby-name" id="lobbyName"></div>
+
+    <div class="header">
+      <div class="team-tag team-amber" id="teamAmberTag">
+        <img class="team-logo" id="teamAmberLogo" src="" alt="" />
+        <div class="name" id="teamAmberName">Team 1</div>
+      </div>
+
+      <div class="sigil-wrap">
+        <svg viewBox="0 0 118 118" aria-hidden="true">
+          <circle class="sigil-ring-bg" cx="59" cy="59" r="52" fill="none" stroke-width="4"/>
+          <circle class="sigil-ring" id="sigilRing" cx="59" cy="59" r="52" fill="none" stroke-width="4"
+                  stroke-dasharray="326.7" stroke-dashoffset="0"
+                  transform="rotate(-90 59 59)"/>
+        </svg>
+        <div class="sigil-center">
+          <div class="t" id="timerText">--</div>
+          <div class="phase" id="phaseText">Waiting</div>
+        </div>
+      </div>
+
+      <div class="team-tag team-sapphire right" id="teamSapphireTag">
+        <img class="team-logo" id="teamSapphireLogo" src="" alt="" />
+        <div class="name" id="teamSapphireName">Team 2</div>
+      </div>
+    </div>
+
+    <div class="bans-row">
+      <div class="bans-side" id="bansAmber"></div>
+      <div class="bans-side right" id="bansSapphire"></div>
+    </div>
+
+    <div class="picks-row">
+      <div class="picks-col" id="picksAmber"></div>
+      <div class="picks-col right" id="picksSapphire"></div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
