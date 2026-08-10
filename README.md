@@ -28,8 +28,7 @@ Work in progress, built for a specific tournament.
 
 ```
 index.html                  the overlay
-html/
-  check-assets.html         verifies every hero has every art file
+check-assets.html         verifies every hero has every art file
 data/
   heroes.json               hero id → name + asset slug   ← hero data here
 css/
