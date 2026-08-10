@@ -28,7 +28,8 @@ Work in progress, built for a specific tournament.
 
 ```
 index.html                  the overlay
-check-assets.html         verifies every hero has every art file
+html/
+  check-assets.html         verifies every hero has every art file
 data/
   heroes.json               hero id → name + asset slug   ← hero data here
 css/
@@ -46,6 +47,9 @@ fonts/                      local webfonts
 assets/images/heroes/
   portraits/  renders/  criticals/  gloats/  names/
 ```
+
+Paths resolve against the project root rather than the current page, so
+files in `html/` load the same data and art as `index.html`.
 
 ## Running it
 
@@ -93,8 +97,11 @@ independent, so mixed conventions are fine.
 
 ### Checking your art
 
-Open `check-assets.html` (served, same as the overlay). It fetches
+Open `html/check-assets.html` (served, same as the overlay). It fetches
 every art file for every hero and flags what's missing.
+
+**Known gap:** Celeste (id 81) has no portrait, but she was picked in a
+real draft — she needs art before a tournament, or that slot renders empty.
 
 ## Hero IDs
 

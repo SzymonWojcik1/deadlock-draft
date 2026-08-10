@@ -3,6 +3,20 @@
    Anything you'd realistically want to change lives here.
    ============================================================ */
 
+/**
+ * Project root, resolved from this module's own URL.
+ *
+ * This is what lets pages live in subfolders: a page in html/ and
+ * index.html both resolve "data/heroes.json" to the same file,
+ * instead of it being relative to whichever page is open.
+ */
+export const ROOT = new URL("../", import.meta.url);
+
+/** Resolve a project-relative path to an absolute URL. */
+export function fromRoot(path){
+  return new URL(path, ROOT).href;
+}
+
 /** StatLocker's live draft socket. */
 export const WS_URL = "wss://statlocker.gg/ws/draft";
 
@@ -10,7 +24,7 @@ export const WS_URL = "wss://statlocker.gg/ws/draft";
 export const RECONNECT_DELAY_MS = 3000;
 
 /** Where the hero table lives. */
-export const HEROES_DATA_URL = "data/heroes.json";
+export const HEROES_DATA_URL = fromRoot("data/heroes.json");
 
 /** Draft shape (Deadlock competitive preset). */
 export const PICKS_PER_TEAM = 6;
@@ -32,9 +46,25 @@ export const STEP_TIME_SECONDS    = 30;
 export const RESERVE_TIME_SECONDS = 120;
 
 /* ------------------------------------------------------------
+   Team logos
+   ------------------------------------------------------------
+   The draft lobby supplies logo URLs, but they aren't always
+   reachable. Set a local file here to override a side entirely;
+   leave null to use whatever the lobby reports.
+
+   Any logo that fails to load is hidden rather than showing a
+   broken image.
+   ------------------------------------------------------------ */
+
+export const TEAM_LOGOS = {
+  amber:    null,   // e.g. "assets/images/teams/amber.png"
+  sapphire: null
+};
+
+/* ------------------------------------------------------------
    Hero art
    ------------------------------------------------------------
-   Every hero asset resolves to:  <dir>/<slug><suffix>.<ext>
+   Every hero asset resolves to:  <dir>/<slug>.<ext>
 
    `slug` comes from data/heroes.json, so a hero is named in one
    place and every art type follows.

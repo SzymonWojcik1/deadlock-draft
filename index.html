@@ -20,8 +20,33 @@
 <div id="setup">
   <div class="panel">
     <h1>Deadlock Draft Overlay</h1>
-    <p>Enter the StatLocker draft code to connect</p>
-    <input id="codeInput" placeholder="e.g. HF5AMBAH" maxlength="12" autocomplete="off" />
+    <p>Connect to a StatLocker draft</p>
+
+    <label class="field">
+      <span class="label">Draft code</span>
+      <input id="codeInput" class="code" placeholder="HF5AMBAH" maxlength="12" autocomplete="off" />
+    </label>
+
+    <div class="divider"><span>Broadcast labels</span></div>
+
+    <label class="field">
+      <span class="label">Stage</span>
+      <input id="stageInput" placeholder="Quarter-final" maxlength="48" autocomplete="off" />
+    </label>
+
+    <div class="field-row">
+      <label class="field">
+        <span class="label amber-label">Team 1</span>
+        <input id="team1Input" placeholder="Hidden King" maxlength="24" autocomplete="off" />
+      </label>
+      <label class="field">
+        <span class="label sapphire-label">Team 2</span>
+        <input id="team2Input" placeholder="Archmother" maxlength="24" autocomplete="off" />
+      </label>
+    </div>
+
+    <p class="hint">Leave blank to use whatever the draft lobby reports.</p>
+
     <button id="connectBtn">Connect</button>
     <div class="status" id="statusMsg"></div>
   </div>
@@ -31,11 +56,11 @@
 <div id="overlay">
   <div class="stage">
 
-    <div class="lobby-name" id="lobbyName"></div>
+    <div class="stage-label" id="stageLabel"></div>
 
     <div class="header">
       <div class="team-tag team-amber" id="teamAmberTag">
-        <img class="team-logo" id="teamAmberLogo" src="" alt="" />
+        <img class="team-logo" id="teamAmberLogo" src="" alt="" hidden />
         <div class="name" id="teamAmberName">Team 1</div>
       </div>
 
@@ -53,7 +78,7 @@
       </div>
 
       <div class="team-tag team-sapphire right" id="teamSapphireTag">
-        <img class="team-logo" id="teamSapphireLogo" src="" alt="" />
+        <img class="team-logo" id="teamSapphireLogo" src="" alt="" hidden />
         <div class="name" id="teamSapphireName">Team 2</div>
       </div>
     </div>

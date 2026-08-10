@@ -8,7 +8,7 @@
    this file needs to change.
    ============================================================ */
 
-import { HEROES_DATA_URL, ASSETS, SLOT_ASSET } from "./config.js";
+import { HEROES_DATA_URL, ASSETS, SLOT_ASSET, fromRoot } from "./config.js";
 
 /** id -> { id, name, slug } */
 let byId = new Map();
@@ -21,7 +21,7 @@ let loaded = false;
 export async function loadHeroes(){
   const res = await fetch(HEROES_DATA_URL);
   if (!res.ok){
-    throw new Error(`Could not load ${HEROES_DATA_URL} (HTTP ${res.status})`);
+    throw new Error(`Could not load data/heroes.json (HTTP ${res.status})`);
   }
 
   const data = await res.json();
@@ -41,7 +41,7 @@ export function heroAsset(hero, type = SLOT_ASSET){
   if (!spec || !hero) return null;
 
   const slug = spec.lowercase ? hero.slug.toLowerCase() : hero.slug;
-  return `${spec.dir}/${slug}.${spec.ext}`;
+  return fromRoot(`${spec.dir}/${slug}.${spec.ext}`);
 }
 
 const warned = new Set();
@@ -66,6 +66,12 @@ function warnUnknown(heroId){
 export function heroInfo(heroId, assetType = SLOT_ASSET){
   if (!loaded){
     console.warn("[overlay] heroInfo() called before loadHeroes() finished.");
+  }
+
+  // A selection that hasn't been made yet has no heroId. Return a
+  // blank entry rather than something like "Hero #undefined".
+  if (heroId === null || heroId === undefined){
+    return { id: null, name: "", image: null, known: false, pending: true };
   }
 
   const hero = byId.get(heroId);

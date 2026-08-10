@@ -5,7 +5,7 @@
 
 :root{
   /* Surfaces */
-  --bg:               transparent;      /* keep transparent for OBS */
+  --bg:               #202024;      /* set to `transparent` for OBS overlay use */
   --obsidian:         #0A0A0F;
   --obsidian-glass:   rgba(10, 10, 15, 0.82);
   --slot-empty-a:     #14141A;

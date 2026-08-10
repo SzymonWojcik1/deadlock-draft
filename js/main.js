@@ -7,9 +7,14 @@ import { loadHeroes } from "./heroes.js";
 import { connectToDraft } from "./socket.js";
 import { renderAll, renderTimerOnly } from "./render.js";
 
+const LABELS_KEY = "dl_overlay_labels";
+
 let draftState = null;
 let timerState = null;
 let connection = null;
+
+/** Broadcaster overrides: blank means "use whatever the lobby says". */
+let labels = { stage: "", team1: "", team2: "" };
 
 const el = (id) => document.getElementById(id);
 
@@ -24,6 +29,36 @@ function showOverlay(){
   el("overlay").classList.add("visible");
 }
 
+/* ---------------- Labels ---------------- */
+
+function readLabelsFromForm(){
+  return {
+    stage: el("stageInput").value.trim(),
+    team1: el("team1Input").value.trim(),
+    team2: el("team2Input").value.trim()
+  };
+}
+
+function writeLabelsToForm(values){
+  el("stageInput").value = values.stage || "";
+  el("team1Input").value = values.team1 || "";
+  el("team2Input").value = values.team2 || "";
+}
+
+function saveLabels(values){
+  try { localStorage.setItem(LABELS_KEY, JSON.stringify(values)); } catch (e) {}
+}
+
+function loadSavedLabels(){
+  try {
+    return JSON.parse(localStorage.getItem(LABELS_KEY) || "{}");
+  } catch (e) {
+    return {};
+  }
+}
+
+/* ---------------- Connection ---------------- */
+
 function connect(code){
   connection?.close();
 
@@ -31,16 +66,18 @@ function connect(code){
     onDraftState(state){
       draftState = state;
       showOverlay();
-      renderAll(draftState, timerState);
+      renderAll(draftState, timerState, labels);
     },
     onTimer(state){
       timerState = state;
       // Timer ticks ~1/sec; repaint only the clock, not the whole board.
-      renderTimerOnly(draftState, timerState);
+      renderTimerOnly(draftState, timerState, labels);
     },
     onStatus: setStatus
   });
 }
+
+/* ---------------- Startup ---------------- */
 
 async function init(){
   // Hero art can't resolve without the table, so load it first.
@@ -52,21 +89,48 @@ async function init(){
     return;
   }
 
-  // ?code=XXXX lets an OBS browser source connect with nothing to click.
-  const codeFromUrl = new URLSearchParams(location.search).get("code");
+  // Restore whatever was typed last time, so a reload doesn't lose it.
+  writeLabelsToForm(loadSavedLabels());
+
+  // URL params let an OBS browser source start with nothing to click:
+  //   ?code=HF5AMBAH&stage=Quarter-final&team1=Hidden+King&team2=Archmother
+  const params = new URLSearchParams(location.search);
+  const codeFromUrl = params.get("code");
+
+  const urlLabels = {
+    stage: params.get("stage"),
+    team1: params.get("team1"),
+    team2: params.get("team2")
+  };
+
+  for (const [key, value] of Object.entries(urlLabels)){
+    if (value !== null) el(`${key}Input`).value = value;
+  }
 
   el("connectBtn").addEventListener("click", () => {
     const code = el("codeInput").value.trim().toUpperCase();
-    if (code) connect(code);
+    if (!code){
+      setStatus("Enter a draft code first.", true);
+      return;
+    }
+
+    labels = readLabelsFromForm();
+    saveLabels(labels);
+    connect(code);
   });
 
-  el("codeInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") el("connectBtn").click();
-  });
+  // Enter submits from any field.
+  for (const id of ["codeInput", "stageInput", "team1Input", "team2Input"]){
+    el(id).addEventListener("keydown", (e) => {
+      if (e.key === "Enter") el("connectBtn").click();
+    });
+  }
 
   if (codeFromUrl){
     const code = codeFromUrl.toUpperCase();
     el("codeInput").value = code;
+    labels = readLabelsFromForm();
+    saveLabels(labels);
     connect(code);
   }
 }

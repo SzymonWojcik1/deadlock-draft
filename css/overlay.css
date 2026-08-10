@@ -20,13 +20,18 @@
   gap: 14px;
 }
 
-.lobby-name{
+.stage-label{
   text-align: center;
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-dim);
 }
+
+/* Collapse entirely when no stage was entered, so the header
+   doesn't sit lower than it needs to. */
+.stage-label:empty{ display: none; }
 
 /* ---------------- Header ---------------- */
 
@@ -53,6 +58,9 @@
   height: 38px;
   object-fit: contain;
 }
+
+/* `hidden` alone loses to the flex context, so be explicit. */
+.team-logo[hidden]{ display: none; }
 
 .team-tag .name{
   font-family: var(--font-display);

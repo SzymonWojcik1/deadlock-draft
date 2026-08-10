@@ -4,6 +4,10 @@
    Takes draft + timer state and paints the DOM. Stateless:
    every call redraws from scratch, so it doesn't matter whether
    you joined at step 0 or step 12.
+
+   `labels` lets the broadcaster override what the lobby reports:
+     { stage, team1, team2 }
+   Any field left blank falls back to the lobby's own value.
    ============================================================ */
 
 import {
@@ -11,7 +15,9 @@ import {
   BANS_PER_TEAM,
   STEP_TYPE_ORDER,
   STEP_TIME_SECONDS,
-  RESERVE_TIME_SECONDS
+  RESERVE_TIME_SECONDS,
+  TEAM_LOGOS,
+  fromRoot
 } from "./config.js";
 
 import { heroInfo } from "./heroes.js";
@@ -23,12 +29,24 @@ const el = (id) => document.getElementById(id);
 
 /* ---------------- Helpers ---------------- */
 
-/** Splits a draft's steps into per-side pick and ban lists. */
+/**
+ * A step only counts as made once it has a heroId.
+ *
+ * The lobby includes the in-progress selection in `steps` before
+ * anything has been chosen, so without this check that pending
+ * entry renders as a completed pick reading "Hero #undefined".
+ */
+function isCompleted(step){
+  return step.heroId !== null && step.heroId !== undefined;
+}
+
+/** Splits a draft's *completed* steps into per-side pick and ban lists. */
 function groupSteps(draftState, amberTeamNumber){
   const bans  = { amber: [], sapphire: [] };
   const picks = { amber: [], sapphire: [] };
 
   for (const step of draftState.steps){
+    if (!isCompleted(step)) continue;
     const side = step.teamNumber === amberTeamNumber ? "amber" : "sapphire";
     (step.selectionType === "ban" ? bans : picks)[side].push(step);
   }
@@ -36,27 +54,74 @@ function groupSteps(draftState, amberTeamNumber){
   return { bans, picks };
 }
 
-/** What kind of selection comes next: "pick" or "ban". */
+/** The selection currently being made, if the lobby exposes one. */
+function pendingStep(draftState){
+  return draftState.steps.find(step => !isCompleted(step)) || null;
+}
+
+/**
+ * What kind of selection comes next: "pick" or "ban".
+ * Prefers the lobby's own pending step; falls back to the
+ * standard order if it doesn't send one.
+ */
 function nextSelectionType(draftState){
-  return STEP_TYPE_ORDER[draftState.steps.length] || "pick";
+  const pending = pendingStep(draftState);
+  if (pending?.selectionType) return pending.selectionType;
+
+  const done = draftState.steps.filter(isCompleted).length;
+  return STEP_TYPE_ORDER[done] || "pick";
 }
 
 /** Which side is on the clock, or null if nobody is. */
 function activeSide(draftState, timerState, amberTeamNumber){
-  if (!timerState || draftState.status === "COMPLETED") return null;
+  if (draftState.status === "COMPLETED") return null;
+
+  // The pending step names the team directly — more reliable
+  // than inferring it from the timer.
+  const pending = pendingStep(draftState);
+  if (pending?.teamNumber !== undefined){
+    return pending.teamNumber === amberTeamNumber ? "amber" : "sapphire";
+  }
+
+  if (!timerState) return null;
   return timerState.activeTeam === amberTeamNumber ? "amber" : "sapphire";
+}
+
+/** Broadcaster override if set, otherwise the lobby's own name. */
+function teamLabel(override, team){
+  const custom = (override || "").trim();
+  return custom || team.displayName || team.teamName || "";
+}
+
+/**
+ * Point a logo element at a URL, hiding it if it can't load.
+ * The lobby's logo URLs aren't always reachable, and a broken
+ * image icon on stream looks worse than no logo at all.
+ */
+function setLogo(imgEl, side, lobbyUrl){
+  const override = TEAM_LOGOS[side];
+  const url = override ? fromRoot(override) : lobbyUrl;
+
+  if (!url){
+    imgEl.hidden = true;
+    return;
+  }
+
+  imgEl.onerror = () => { imgEl.hidden = true; };
+  imgEl.onload  = () => { imgEl.hidden = false; };
+  imgEl.src = url;
 }
 
 /* ---------------- Sections ---------------- */
 
-function renderHeader(amberTeam, sapphireTeam, lobbyName){
-  el("lobbyName").textContent = lobbyName || "";
+function renderHeader(amberTeam, sapphireTeam, labels){
+  el("stageLabel").textContent = (labels.stage || "").trim();
 
-  el("teamAmberName").textContent    = amberTeam.displayName    || amberTeam.teamName;
-  el("teamSapphireName").textContent = sapphireTeam.displayName || sapphireTeam.teamName;
+  el("teamAmberName").textContent    = teamLabel(labels.team1, amberTeam);
+  el("teamSapphireName").textContent = teamLabel(labels.team2, sapphireTeam);
 
-  el("teamAmberLogo").src    = amberTeam.teamLogo    || "";
-  el("teamSapphireLogo").src = sapphireTeam.teamLogo || "";
+  setLogo(el("teamAmberLogo"),    "amber",    amberTeam.teamLogo);
+  setLogo(el("teamSapphireLogo"), "sapphire", sapphireTeam.teamLogo);
 }
 
 function renderBans(container, steps, side, markNextSlot){
@@ -122,19 +187,21 @@ function renderPicks(container, steps, side, markNextSlot){
   }
 }
 
-function renderTimer(draftState, timerState, amberTeam, sapphireTeam){
+function renderTimer(draftState, timerState, amberTeam, sapphireTeam, labels){
   const ring  = el("sigilRing");
   const value = el("timerText");
   const phase = el("phaseText");
 
-  const amberLabel    = amberTeam.displayName    || amberTeam.teamName;
-  const sapphireLabel = sapphireTeam.displayName || sapphireTeam.teamName;
+  const amberLabel    = teamLabel(labels.team1, amberTeam);
+  const sapphireLabel = teamLabel(labels.team2, sapphireTeam);
 
   if (draftState.status === "COMPLETED"){
     value.textContent = "✓";
     phase.textContent = "Draft complete";
     ring.style.strokeDashoffset = 0;
     ring.classList.remove("sapphire-active");
+    el("teamAmberTag").classList.remove("active-turn");
+    el("teamSapphireTag").classList.remove("active-turn");
     return;
   }
 
@@ -169,21 +236,22 @@ function renderTimer(draftState, timerState, amberTeam, sapphireTeam){
   el("teamSapphireTag").classList.toggle("active-turn", !isAmberActive);
 }
 
-/* ---------------- Entry point ---------------- */
+/* ---------------- Entry points ---------------- */
 
 /**
  * Repaint the whole overlay.
  * @param {object} draftState  latest DRAFT_STATE_UPDATE payload
  * @param {object|null} timerState latest TIMER_UPDATE payload
+ * @param {object} [labels] { stage, team1, team2 } broadcaster overrides
  */
-export function renderAll(draftState, timerState){
+export function renderAll(draftState, timerState, labels = {}){
   if (!draftState) return;
 
   const amberTeam    = draftState.teams.find(t => t.isAmberTeam);
   const sapphireTeam = draftState.teams.find(t => !t.isAmberTeam);
   if (!amberTeam || !sapphireTeam) return;
 
-  renderHeader(amberTeam, sapphireTeam, draftState.name);
+  renderHeader(amberTeam, sapphireTeam, labels);
 
   const { bans, picks } = groupSteps(draftState, amberTeam.teamNumber);
   const active   = activeSide(draftState, timerState, amberTeam.teamNumber);
@@ -199,14 +267,14 @@ export function renderAll(draftState, timerState){
   renderPicks(el("picksSapphire"), picks.sapphire, "sapphire",
               active === "sapphire" && nextType === "pick");
 
-  renderTimer(draftState, timerState, amberTeam, sapphireTeam);
+  renderTimer(draftState, timerState, amberTeam, sapphireTeam, labels);
 }
 
 /** Timer-only repaint, for the once-a-second TIMER_UPDATE messages. */
-export function renderTimerOnly(draftState, timerState){
+export function renderTimerOnly(draftState, timerState, labels = {}){
   if (!draftState) return;
   const amberTeam    = draftState.teams.find(t => t.isAmberTeam);
   const sapphireTeam = draftState.teams.find(t => !t.isAmberTeam);
   if (!amberTeam || !sapphireTeam) return;
-  renderTimer(draftState, timerState, amberTeam, sapphireTeam);
+  renderTimer(draftState, timerState, amberTeam, sapphireTeam, labels);
 }
