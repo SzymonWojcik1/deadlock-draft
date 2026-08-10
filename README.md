@@ -96,7 +96,7 @@ independent, so mixed conventions are fine.
 
 ### Checking your art
 
-Open `html/check-assets.html` (served, same as the overlay). It fetches
+Open `check-assets.html` (served, same as the overlay). It fetches
 every art file for every hero and flags what's missing.
 
 **Known gap:** Celeste (id 81) has no portrait, but she was picked in a
