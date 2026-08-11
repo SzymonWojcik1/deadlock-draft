@@ -5,7 +5,8 @@
 
 import { loadHeroes } from "./heroes.js";
 import { connectToDraft } from "./socket.js";
-import { renderAll, renderTimerOnly } from "./render.js";
+import { renderAll, renderTimerOnly, resetReveals } from "./render.js";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./config.js";
 
 const LABELS_KEY = "dl_overlay_labels";
 
@@ -17,6 +18,20 @@ let connection = null;
 let labels = { stage: "", team1: "", team2: "" };
 
 const el = (id) => document.getElementById(id);
+
+/**
+ * The overlay is built at a fixed 1920x1080 so it matches the
+ * design exactly. Scale it to fit whatever window it's in, which
+ * keeps it usable both in a browser tab and as an OBS source at
+ * any output resolution.
+ */
+function fitCanvas(){
+  const scale = Math.min(
+    window.innerWidth  / CANVAS_WIDTH,
+    window.innerHeight / CANVAS_HEIGHT
+  );
+  document.documentElement.style.setProperty("--canvas-scale", scale);
+}
 
 function setStatus(message, isError){
   const node = el("statusMsg");
@@ -62,6 +77,11 @@ function loadSavedLabels(){
 function connect(code){
   connection?.close();
 
+  // A different draft shares no step ids with the last one, but
+  // reconnecting to the same one does — clear either way so the
+  // first paint never replays selections that already happened.
+  resetReveals();
+
   connection = connectToDraft(code, {
     onDraftState(state){
       draftState = state;
@@ -80,6 +100,9 @@ function connect(code){
 /* ---------------- Startup ---------------- */
 
 async function init(){
+  fitCanvas();
+  window.addEventListener("resize", fitCanvas);
+
   // Hero art can't resolve without the table, so load it first.
   try {
     await loadHeroes();

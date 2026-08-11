@@ -26,13 +26,17 @@ export const RECONNECT_DELAY_MS = 3000;
 /** Where the hero table lives. */
 export const HEROES_DATA_URL = fromRoot("data/heroes.json");
 
+/** Design canvas. The overlay is built at this size and scaled to fit. */
+export const CANVAS_WIDTH  = 1920;
+export const CANVAS_HEIGHT = 1080;
+
 /** Draft shape (Deadlock competitive preset). */
 export const PICKS_PER_TEAM = 6;
 export const BANS_PER_TEAM  = 2;
 
 /**
  * Order of selections in a standard draft.
- * Used to work out whether the next action is a pick or a ban.
+ * Only a fallback — the lobby's own pending step is preferred.
  */
 export const STEP_TYPE_ORDER = [
   "ban", "ban",
@@ -44,22 +48,6 @@ export const STEP_TYPE_ORDER = [
 /** Timer budgets, used to draw the countdown ring. */
 export const STEP_TIME_SECONDS    = 30;
 export const RESERVE_TIME_SECONDS = 120;
-
-/* ------------------------------------------------------------
-   Team logos
-   ------------------------------------------------------------
-   The draft lobby supplies logo URLs, but they aren't always
-   reachable. Set a local file here to override a side entirely;
-   leave null to use whatever the lobby reports.
-
-   Any logo that fails to load is hidden rather than showing a
-   broken image.
-   ------------------------------------------------------------ */
-
-export const TEAM_LOGOS = {
-  amber:    null,   // e.g. "assets/images/teams/amber.png"
-  sapphire: null
-};
 
 /* ------------------------------------------------------------
    Hero art
@@ -82,5 +70,50 @@ export const ASSETS = {
   name:     { dir: "assets/images/heroes/names",     ext: "svg", lowercase: false }
 };
 
-/** Art used for pick and ban slots in the overlay. */
-export const SLOT_ASSET = "portrait";
+/**
+ * Which art each slot type uses.
+ *
+ * Cards are composited: the artwork fills the card, and the name
+ * SVG sits on top near the bottom. Both are driven by the same
+ * hero slug, so a card needs no per-hero setup.
+ */
+export const PICK_ASSET = "gloat";
+export const BAN_ASSET  = "critical";
+export const NAME_ASSET = "name";
+
+/** Art used for the big centre-stage reveal, for both picks and bans. */
+export const REVEAL_ASSET = "render";
+
+/* ------------------------------------------------------------
+   Voice lines
+   ------------------------------------------------------------
+   Played at the start of a big reveal. Files are looked up by the
+   hero's slug, same as art: <dir>/<slug>.<ext>
+
+   Missing files fail silently, so you can add them a few at a time.
+   Set `enabled: true` once some exist.
+
+   Note: a normal browser tab won't play audio until the page has
+   been clicked. OBS browser sources have no such restriction.
+   ------------------------------------------------------------ */
+
+export const VOICE = {
+  enabled: false,
+  pickDir: "assets/audio/heroes/picks",
+  banDir:  "assets/audio/heroes/bans",
+  ext:     "mp3",
+  volume:  0.8
+};
+
+/* ------------------------------------------------------------
+   Team logos
+   ------------------------------------------------------------
+   Set a local file to override a side's logo; leave null to use
+   whatever the lobby reports. Logos that fail to load are hidden
+   rather than showing a broken image.
+   ------------------------------------------------------------ */
+
+export const TEAM_LOGOS = {
+  amber:    null,   // e.g. "assets/images/teams/amber.png"
+  sapphire: null
+};

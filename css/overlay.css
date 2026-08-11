@@ -1,283 +1,391 @@
 /* ============================================================
-   Overlay: layout + components
+   Overlay layout.
+
+   Built on a fixed 1920x1080 canvas, scaled to fit the window by
+   JS. Positions are absolute so the result matches the design
+   rather than reflowing.
+
+   Layout map (y, top to bottom):
+       0 –  460   free: cameras, logo, title
+     470 –  514   stage label
+     540 –  720   bans
+     700 –  740   team names
+     770 –  955   picks + timer
+     955 – 1080   free
+
+   The whole upper half is intentionally empty. Nothing in here
+   should grow upward into it.
    ============================================================ */
 
 #overlay{
   display: none;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  padding: 18px;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
 }
 
 #overlay.visible{ display: block; }
 
-.stage{
-  max-width: var(--stage-max-width);
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+/* Scaled by JS via --canvas-scale; origin top-left so the
+   translate in the transform positions it predictably. */
+.canvas{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--canvas-w);
+  height: var(--canvas-h);
+  transform: translate(-50%, -50%) scale(var(--canvas-scale, 1));
+  transform-origin: center center;
 }
+
+/* ---------------- Stage label ---------------- */
 
 .stage-label{
+  position: absolute;
+  top: 470px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 460px;
+  padding: 10px 28px;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 12px;
-  letter-spacing: 0.16em;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--ink-dim);
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
 }
 
-/* Collapse entirely when no stage was entered, so the header
-   doesn't sit lower than it needs to. */
 .stage-label:empty{ display: none; }
 
-/* ---------------- Header ---------------- */
+/* ---------------- Team names ---------------- */
 
-.header{
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 18px;
-}
-
-.team-tag{
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.team-tag.right{
-  flex-direction: row-reverse;
-  text-align: right;
-}
-
-.team-logo{
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
-}
-
-/* `hidden` alone loses to the flex context, so be explicit. */
-.team-logo[hidden]{ display: none; }
-
-.team-tag .name{
+.team-name{
+  position: absolute;
+  top: 700px;
+  width: 460px;
+  padding: 9px 16px;
+  text-align: center;
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-name.team-amber{
+  left: 50px;
+  color: var(--amber);
+  border-bottom: 2px solid var(--amber);
+}
+
+.team-name.team-sapphire{
+  right: 50px;
+  color: var(--sapphire);
+  border-bottom: 2px solid var(--sapphire);
+}
+
+/* ---------------- Card rows ---------------- */
+
+.bans,
+.picks{
+  position: absolute;
+  display: flex;
+  gap: var(--card-gap);
+}
+
+/* Bans flank the centre line, two per side. */
+.bans{
+  top: 540px;
+  height: var(--ban-h);
+}
+
+.bans-amber{ right: calc(50% + var(--centre-gap) / 2); }
+.bans-sapphire{ left: calc(50% + var(--centre-gap) / 2); }
+
+/* Picks run along the bottom, six per side, anchored outward. */
+.picks{
+  top: 770px;
+  height: var(--pick-h);
+}
+
+.picks-amber{ left: 50px; }
+.picks-sapphire{ right: 50px; }
+
+/* ---------------- Cards ---------------- */
+
+.card{
+  position: relative;
+  width: var(--card-w);
+  height: 100%;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--slot-empty);
+  border: 1px solid var(--hairline);
+}
+
+.card-art{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Hero name artwork, sitting over the lower part of the card.
+   Width is fixed and height follows the SVG's own aspect ratio, so
+   every name occupies the same horizontal footprint regardless of
+   how wide or narrow the artwork is. */
+.card-name{
+  position: absolute;
+  left: 50%;
+  bottom: var(--name-bottom);
+  z-index: 3;
+  width: var(--name-w);
+  height: auto;
+  transform: translateX(-50%) rotate(var(--name-angle));
+  transform-origin: center center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
+}
+
+/* Text fallback when a hero has no name artwork. */
+.card-name-text{
+  position: absolute;
+  left: 50%;
+  bottom: var(--name-bottom);
+  z-index: 3;
+  width: var(--name-w);
+  transform: translateX(-50%) rotate(var(--name-angle));
+  transform-origin: center center;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  color: #EDE7D9;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.95);
 }
 
-.team-amber .name{ color: var(--amber); }
-.team-sapphire .name{ color: var(--sapphire); }
+/* Gradient so names stay readable over busy art.
+   Sits below the name plate — without an explicit z-index a
+   pseudo-element paints as the last child and dims the name. */
+.card.filled::after{
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    transparent 45%,
+    rgba(0, 0, 0, 0.75) 100%
+  );
+  pointer-events: none;
+}
+
+.card.pick.filled.amber-side{ border-bottom: 3px solid var(--amber); }
+.card.pick.filled.sapphire-side{ border-bottom: 3px solid var(--sapphire); }
+
+/* Bans read as struck out rather than celebrated. */
+.card.ban.filled .card-art{ filter: grayscale(0.85) brightness(0.6); }
+
+.card.ban.filled::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    135deg,
+    transparent 47.5%,
+    var(--ban-red) 48.5%,
+    var(--ban-red) 51.5%,
+    transparent 52.5%
+  );
+  opacity: 0.85;
+}
+
+/* ---------------- Empty + waiting ---------------- */
+
+.card.empty{
+  background: var(--slot-empty);
+  border-style: solid;
+}
+
+/* The slot about to be filled. Blinks so the eye lands on
+   whose turn it is without needing to read anything. */
+.card.waiting{
+  animation: waitingBlink 1.15s ease-in-out infinite;
+}
+
+.card.waiting.amber-side{
+  background: var(--amber-wait);
+  border-color: var(--amber);
+}
+
+.card.waiting.sapphire-side{
+  background: var(--sapphire-wait);
+  border-color: var(--sapphire);
+}
+
+@keyframes waitingBlink{
+  0%, 100%{ opacity: 1; }
+  50%{ opacity: 0.45; }
+}
+
+/* ---------------- Reveal ---------------- */
+
+/*
+   Plays once, only on the card that was just picked or banned.
+
+   The art wipes up from the bottom of the slot, a band of light
+   travels with the leading edge, and the name settles in once the
+   wipe has finished. Everything is keyed off `.revealing`, which
+   the renderer adds only for steps it hasn't shown before — so
+   joining a draft late paints the existing picks instantly rather
+   than replaying the whole draft.
+*/
+
+@keyframes revealWipe{
+  from{ clip-path: inset(100% 0 0 0); }
+  to  { clip-path: inset(0 0 0 0); }
+}
+
+.card.revealing .card-art,
+.card.revealing::after{
+  animation: revealWipe var(--reveal-wipe) cubic-bezier(0.25, 0.8, 0.3, 1) both;
+}
+
+/* Band of light riding the leading edge of the wipe. */
+.card-sweep{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  height: 46px;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 65%,
+    rgba(255, 255, 255, 0.95) 100%
+  );
+  animation: revealSweep var(--reveal-wipe) cubic-bezier(0.25, 0.8, 0.3, 1) both;
+}
+
+@keyframes revealSweep{
+  from{ transform: translateY(0); opacity: 0; }
+  15% { opacity: 0.9; }
+  85% { opacity: 0.5; }
+  to  { transform: translateY(calc(-1 * var(--pick-h))); opacity: 0; }
+}
+
+/* Name waits for the wipe, then settles. The translateX/rotate are
+   repeated here because a transform animation replaces the whole
+   transform, not just the part it changes. */
+@keyframes revealName{
+  from{
+    opacity: 0;
+    transform: translateX(-50%) rotate(var(--name-angle)) translateY(14px) scale(0.88);
+  }
+  to{
+    opacity: 1;
+    transform: translateX(-50%) rotate(var(--name-angle)) translateY(0) scale(1);
+  }
+}
+
+.card.revealing .card-name,
+.card.revealing .card-name-text{
+  animation: revealName var(--reveal-name) cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+  animation-delay: calc(var(--reveal-wipe) * 0.75);
+}
+
+/* The ban slash lands after the art, so the hero reads first and
+   then gets struck out. */
+@keyframes revealSlash{
+  from{ opacity: 0; transform: scale(1.6); }
+  to  { opacity: 0.85; transform: scale(1); }
+}
+
+.card.ban.revealing::before{
+  animation: revealSlash 0.28s ease-out both;
+  animation-delay: calc(var(--reveal-wipe) * 0.8);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .card.revealing .card-art,
+  .card.revealing::after,
+  .card.revealing .card-name,
+  .card.revealing .card-name-text,
+  .card.ban.revealing::before{
+    animation: none;
+  }
+  .card-sweep{ display: none; }
+}
 
 /* ---------------- Timer ---------------- */
 
-.sigil-wrap{
-  position: relative;
-  width: 118px;
-  height: 118px;
+.timer{
+  position: absolute;
+  top: 770px;
+  left: 50%;
+  width: var(--timer-size);
+  height: var(--timer-size);
+  margin-top: calc((var(--pick-h) - var(--timer-size)) / 2);
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.sigil-wrap svg{
+.timer-ring{
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.sigil-ring-bg{ stroke: rgba(237, 231, 217, 0.08); }
+.ring-bg{ stroke: rgba(237, 231, 217, 0.1); }
 
-.sigil-ring{
+.ring-fg{
   stroke: var(--amber);
   stroke-linecap: round;
 }
 
-.sigil-ring.sapphire-active{ stroke: var(--sapphire); }
+.ring-fg.sapphire-active{ stroke: var(--sapphire); }
 
-.sigil-center{
+.timer-center{
   position: relative;
   text-align: center;
 }
 
-.sigil-center .t{
+.timer-value{
   font-family: var(--font-mono);
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 500;
   line-height: 1;
+  color: var(--ink);
 }
 
-.sigil-center .phase{
-  margin-top: 3px;
+.timer-phase{
+  margin-top: 5px;
   font-family: var(--font-display);
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-dim);
-}
-
-/* ---------------- Bans ---------------- */
-
-.bans-row{
-  display: flex;
-  gap: 16px;
-}
-
-.bans-side{
-  flex: 1;
-  display: flex;
-  gap: 8px;
-}
-
-.bans-side.right{ justify-content: flex-end; }
-
-.ban-slot{
-  width: var(--ban-slot-width);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-}
-
-.ban-slot .portrait-wrap{
-  position: relative;
-  width: var(--portrait-ban);
-  height: var(--portrait-ban);
-  border-radius: var(--radius);
+  max-width: 110px;
+  white-space: nowrap;
   overflow: hidden;
-  background: #1A1A22;
-  border: 1px solid var(--hairline);
+  text-overflow: ellipsis;
 }
-
-.ban-slot img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(1) brightness(0.55);
-}
-
-/* Diagonal slash marking the hero as banned */
-.ban-slot .portrait-wrap::after{
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    transparent 46%,
-    var(--ban-red) 48%,
-    var(--ban-red) 52%,
-    transparent 54%
-  );
-  opacity: 0.9;
-}
-
-.ban-slot .ban-name{
-  max-width: var(--ban-slot-width);
-  font-family: var(--font-display);
-  font-size: 9px;
-  line-height: 1.15;
-  letter-spacing: 0.03em;
-  text-align: center;
-  text-transform: uppercase;
-  color: var(--ink-dim);
-}
-
-.ban-slot.empty .portrait-wrap{
-  background: repeating-linear-gradient(
-    45deg,
-    var(--slot-empty-a), var(--slot-empty-a) 4px,
-    var(--slot-empty-b) 4px, var(--slot-empty-b) 8px
-  );
-}
-
-.ban-slot.empty .portrait-wrap::after{ display: none; }
-
-/* ---------------- Picks ---------------- */
-
-.picks-row{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.picks-col{
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.picks-col.right .pick-card{
-  flex-direction: row-reverse;
-  text-align: right;
-}
-
-.pick-card{
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 60px;
-  padding: 8px 12px;
-  background: var(--obsidian-glass);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-}
-
-.pick-card.filled.amber-side{ border-left: 3px solid var(--amber); }
-.pick-card.filled.sapphire-side{ border-right: 3px solid var(--sapphire); }
-
-.pick-portrait{
-  width: var(--portrait-pick);
-  height: var(--portrait-pick);
-  flex-shrink: 0;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: #1A1A22;
-}
-
-.pick-portrait img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.pick-info .hname{
-  font-family: var(--font-display);
-  font-size: 15px;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.pick-info .horder{
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--ink-dim);
-}
-
-.pick-card.empty .pick-portrait{
-  background: repeating-linear-gradient(
-    45deg,
-    var(--slot-empty-a), var(--slot-empty-a) 4px,
-    var(--slot-empty-b) 4px, var(--slot-empty-b) 8px
-  );
-}
-
-.pick-card.empty .hname{
-  font-size: 12px;
-  color: var(--ink-dim);
-}
-
-/* ---------------- Active turn (static highlight) ---------------- */
-
-.team-tag.active-turn .name{ text-decoration: underline; text-underline-offset: 4px; }
-
-.slot-active.pick-card{ border-style: dashed; }
-.slot-active .portrait-wrap{ border-style: dashed; }
-
-.amber-active.pick-card,
-.amber-active .portrait-wrap{ border-color: var(--amber); }
-
-.sapphire-active.pick-card,
-.sapphire-active .portrait-wrap{ border-color: var(--sapphire); }

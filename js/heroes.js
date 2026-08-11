@@ -8,7 +8,7 @@
    this file needs to change.
    ============================================================ */
 
-import { HEROES_DATA_URL, ASSETS, SLOT_ASSET, fromRoot } from "./config.js";
+import { HEROES_DATA_URL, ASSETS, PICK_ASSET, fromRoot } from "./config.js";
 
 /** id -> { id, name, slug } */
 let byId = new Map();
@@ -36,7 +36,7 @@ export async function loadHeroes(){
  * @param {object} hero  entry from the hero table
  * @param {string} type  key of ASSETS: portrait, render, critical, gloat, name
  */
-export function heroAsset(hero, type = SLOT_ASSET){
+export function heroAsset(hero, type = PICK_ASSET){
   const spec = ASSETS[type];
   if (!spec || !hero) return null;
 
@@ -63,7 +63,7 @@ function warnUnknown(heroId){
  * @param {number} heroId
  * @param {string} [assetType] which art folder to use
  */
-export function heroInfo(heroId, assetType = SLOT_ASSET){
+export function heroInfo(heroId, assetType = PICK_ASSET){
   if (!loaded){
     console.warn("[overlay] heroInfo() called before loadHeroes() finished.");
   }

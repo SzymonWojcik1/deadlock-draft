@@ -1,0 +1,281 @@
+/* ============================================================
+   Big centre-stage reveal.
+
+   Plays when a hero is picked or banned, before that hero appears
+   in the pick/ban row.
+
+   CAMERA SAFETY
+   -------------
+   Everything here is confined to the band between --reveal-top and
+   the bottom of the canvas. The stage is a fixed box in that band
+   and the artwork is clamped to it with object-fit, so a tall
+   render scales down instead of growing upward into the cameras.
+   Raising --reveal-top shrinks the reveal; it never overlaps.
+   ============================================================ */
+
+/* ---------------- Scrim ---------------- */
+
+/*
+   Quietens everything behind the render.
+
+   This covers the full canvas, including the camera area — the
+   render itself still stays below --reveal-top, but the dimming
+   deliberately doesn't, so the reveal is the only bright thing on
+   screen while it plays.
+
+   Worth knowing for OBS: the overlay is transparent there, so this
+   dims your camera feeds and gameplay too, not just the board. If
+   that's too heavy, lower the alpha values below or set
+   `top: var(--reveal-top)` to go back to board-only dimming.
+*/
+.reveal-scrim{
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 70% 65% at 50% 62%,
+      rgba(8, 8, 12, 0.60) 0%,
+      rgba(8, 8, 12, 0.86) 100%
+    );
+  transition: opacity 0.4s ease;
+}
+
+.reveal-scrim.on{ opacity: 1; }
+
+/* ---------------- Stage ---------------- */
+
+.reveal-stage{
+  position: absolute;
+  top: var(--reveal-top);
+  bottom: var(--reveal-bottom);
+  left: 50%;
+  z-index: 41;
+  width: var(--reveal-max-w);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.reveal-stage:empty{ display: none; }
+
+.reveal-card{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/*
+   Light behind the hero, tinted by side.
+
+   Kept wide and low-contrast on purpose: a tight bright disc reads
+   as a shape sitting behind a cutout, which is exactly the pasted-on
+   look we're trying to avoid. A broad falloff reads as the hero
+   being lit from behind.
+*/
+.reveal-glow{
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: 620px;
+  height: 560px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(28px);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(201, 162, 39, 0.26) 0%,
+    rgba(201, 162, 39, 0.12) 42%,
+    rgba(201, 162, 39, 0) 74%
+  );
+}
+
+.reveal-card.sapphire-side .reveal-glow{
+  background: radial-gradient(
+    ellipse at center,
+    rgba(62, 111, 196, 0.26) 0%,
+    rgba(62, 111, 196, 0.12) 42%,
+    rgba(62, 111, 196, 0) 74%
+  );
+}
+
+.reveal-card.ban .reveal-glow{
+  background: radial-gradient(
+    ellipse at center,
+    rgba(163, 46, 60, 0.28) 0%,
+    rgba(163, 46, 60, 0.13) 42%,
+    rgba(163, 46, 60, 0) 74%
+  );
+}
+
+/*
+   The hero artwork.
+
+   min-height:0 lets flex shrink it, and object-fit keeps it inside
+   the band whatever its aspect.
+
+   Renders are cutouts, so a tight dark shadow traces the alpha edge
+   and makes them look pasted on. A wide, diffuse shadow reads as
+   light in the scene instead. The bottom of the image is faded out
+   so the cut edge dissolves rather than stopping dead.
+*/
+.reveal-art{
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 26px 46px rgba(0, 0, 0, 0.42));
+
+  -webkit-mask-image: linear-gradient(
+    to top,
+    transparent 0%,
+    #000 var(--reveal-fade)
+  );
+  mask-image: linear-gradient(
+    to top,
+    transparent 0%,
+    #000 var(--reveal-fade)
+  );
+
+  /* Composite on the GPU so the entrance doesn't resample the
+     bitmap on the CPU each frame. */
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+/* ---------------- Pick sequence ---------------- */
+
+/*
+   Rises into frame, holds, then drops away toward the row where
+   the card is about to fill in.
+
+   No scaling: resampling a large bitmap every frame is what makes
+   the motion look gritty. Rising and fading moves the same distance
+   visually without touching the pixels.
+
+   The blur→sharp pass makes the hero resolve into focus rather than
+   arriving as a hard-edged cutout, which hides the alpha edge during
+   the part of the animation where the eye is most likely to catch it.
+*/
+@keyframes revealStageIn{
+  from{
+    opacity: 0;
+    transform: translate3d(0, 64px, 0);
+    filter: blur(14px);
+  }
+  60%{
+    opacity: 1;
+    filter: blur(2px);
+  }
+  to{
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+@keyframes revealStageOut{
+  from{ opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+  to  { opacity: 0; transform: translate3d(0, 38px, 0); filter: blur(6px); }
+}
+
+@keyframes revealGlowIn{
+  from{ opacity: 0; transform: translateX(-50%) scale(0.78); }
+  to  { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+/* A settling curve, no overshoot. Bounce reads as a stutter at
+   this size. */
+.reveal-card.entering{
+  animation: revealStageIn var(--reveal-in) cubic-bezier(0.16, 0.72, 0.24, 1) both;
+}
+
+.reveal-card.entering .reveal-glow{
+  animation: revealGlowIn calc(var(--reveal-in) * 1.15) ease-out both;
+  opacity: 1;
+}
+
+.reveal-card.leaving{
+  animation: revealStageOut var(--reveal-out) cubic-bezier(0.4, 0, 0.7, 0.2) both;
+}
+
+/* ---------------- Ban sequence ---------------- */
+
+/*
+   Same entrance, then the hero is shaken and drained of colour.
+   The desaturation is a transition rather than a keyframe so it
+   holds its end state for the rest of the reveal.
+
+   filter replaces the whole property, so the shadow is restated
+   here — otherwise going grayscale would drop it and the hero
+   would flatten against the scrim.
+*/
+@keyframes revealShake{
+  0%, 100%{ transform: translate3d(0, 0, 0) rotate(0deg); }
+  12%{ transform: translate3d(-9px, 0, 0) rotate(-1.1deg); }
+  26%{ transform: translate3d(8px, 0, 0) rotate(1deg); }
+  40%{ transform: translate3d(-6px, 0, 0) rotate(-0.7deg); }
+  54%{ transform: translate3d(4px, 0, 0) rotate(0.5deg); }
+  68%{ transform: translate3d(-3px, 0, 0) rotate(-0.3deg); }
+  82%{ transform: translate3d(1px, 0, 0) rotate(0.15deg); }
+}
+
+.reveal-card.ban.struck .reveal-art{
+  animation: revealShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  filter: grayscale(1) brightness(0.74) contrast(1.06)
+          drop-shadow(0 26px 46px rgba(0, 0, 0, 0.42));
+  transition: filter 0.5s ease-out;
+}
+
+/* Red flash at the moment of the strike. */
+@keyframes revealStrikeFlash{
+  0%  { opacity: 0; }
+  18% { opacity: 0.5; }
+  100%{ opacity: 0; }
+}
+
+.reveal-strike{
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(163, 46, 60, 0.75) 0%,
+    rgba(163, 46, 60, 0) 65%
+  );
+}
+
+.reveal-card.ban.struck .reveal-strike{
+  animation: revealStrikeFlash 0.55s ease-out both;
+}
+
+/* ---------------- Reduced motion ---------------- */
+
+@media (prefers-reduced-motion: reduce){
+  .reveal-card.entering,
+  .reveal-card.leaving,
+  .reveal-card.entering .reveal-glow,
+  .reveal-card.ban.struck .reveal-art,
+  .reveal-card.ban.struck .reveal-strike{
+    animation: none;
+    filter: none;
+  }
+  .reveal-card.entering .reveal-glow{ opacity: 1; }
+  .reveal-card.ban.struck .reveal-art{
+    filter: grayscale(1) brightness(0.74);
+  }
+}

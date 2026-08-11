@@ -5,33 +5,72 @@
 
 :root{
   /* Surfaces */
-  --bg:               #202024;      /* set to `transparent` for OBS overlay use */
+  --bg:               #4A4A4E;      /* set to `transparent` for OBS overlay use */
   --obsidian:         #0A0A0F;
   --obsidian-glass:   rgba(10, 10, 15, 0.82);
-  --slot-empty-a:     #14141A;
-  --slot-empty-b:     #191920;
+  --panel:            rgba(214, 214, 214, 0.9);
+  --slot-empty:       rgba(214, 214, 214, 0.85);
 
   /* Text */
-  --ink:              #EDE7D9;
-  --ink-dim:          #9C9484;
+  --ink:              #16161A;
+  --ink-dim:          #55525C;
 
   /* Team colours */
-  --amber:            #E3A857;
-  --sapphire:         #5B8CE0;
-  --ban-red:          #8B2F3B;
+  --amber:            #C9A227;
+  --sapphire:         #3E6FC4;
+  --ban-red:          #A32E3C;
+
+  /* Waiting-slot fills */
+  --amber-wait:       #C8B78E;
+  --sapphire-wait:    #9BB3DA;
 
   /* Lines */
-  --hairline:         rgba(237, 231, 217, 0.12);
+  --hairline:         rgba(20, 20, 26, 0.25);
 
   /* Type */
   --font-display:     'Oswald', sans-serif;
   --font-body:        'IBM Plex Sans', sans-serif;
   --font-mono:        'IBM Plex Mono', monospace;
 
-  /* Sizing */
-  --portrait-pick:    44px;
-  --portrait-ban:     44px;
-  --ban-slot-width:   64px;
-  --stage-max-width:  1500px;
+  /* ---------- Layout (design canvas is 1920x1080) ---------- */
+
+  --canvas-w:         1920px;
+  --canvas-h:         1080px;
+
+  --card-w:           120px;   /* pick and ban cards share a width */
+  --card-gap:         12px;
+  --pick-h:           185px;
+  --ban-h:            180px;
+
+  --centre-gap:       40px;    /* space between the two ban pairs */
+  --timer-size:       130px;
+
+  /* Hero name plates. Fixed width so every name occupies the same
+     footprint; height follows each SVG's own proportions. */
+  --name-w:           100px;
+  --name-bottom:      10px;
+  --name-angle:       -10deg;
+
+  /* Pick/ban reveal timing. */
+  --reveal-wipe:      0.55s;   /* art wiping up the card */
+  --reveal-name:      0.35s;   /* name settling in after it */
+
+  /* ---------- Big centre-stage reveal ----------
+     --reveal-top is the camera safe line: nothing in the big
+     reveal is allowed above it. Raise it and the render shrinks
+     to match rather than overlapping the cams. */
+
+  --reveal-top:       470px;
+  --reveal-bottom:    120px;   /* distance from canvas bottom */
+  --reveal-max-w:     620px;
+
+  /* How far up the artwork the bottom fade reaches. Larger = softer
+     landing; set to 0% for a hard edge. */
+  --reveal-fade:      14%;
+
+  --reveal-in:        0.70s;
+  --reveal-hold:      1.20s;
+  --reveal-out:       0.50s;
+
   --radius:           3px;
 }
