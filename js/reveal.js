@@ -10,8 +10,9 @@
    the JS that waits on it can't drift apart.
    ============================================================ */
 
-import { REVEAL_ASSET, VOICE } from "./config.js";
+import { REVEAL_ASSET } from "./config.js";
 import { heroInfo } from "./heroes.js";
+import { playSelectionAudio, stopSelectionAudio } from "./audio.js";
 
 const el = (id) => document.getElementById(id);
 
@@ -25,47 +26,6 @@ function cssTime(name, fallback){
   if (raw.endsWith("ms")) return parseFloat(raw);
   if (raw.endsWith("s"))  return parseFloat(raw) * 1000;
   return fallback;
-}
-
-/* ---------------- Voice lines ---------------- */
-
-let currentAudio = null;
-
-/**
- * Play a hero's voice line, if one exists and audio is enabled.
- *
- * Deliberately forgiving: a missing file, an unsupported format or
- * a browser blocking autoplay all fail silently rather than
- * interrupting the reveal. Note that a normal browser tab won't
- * play audio until the page has been clicked; OBS browser sources
- * allow it without interaction.
- */
-function playVoiceLine(hero, kind){
-  if (!VOICE.enabled || !hero?.slug) return;
-
-  stopVoiceLine();
-
-  const dir = kind === "ban" ? VOICE.banDir : VOICE.pickDir;
-  if (!dir) return;
-
-  try {
-    const audio = new Audio(`${dir}/${hero.slug}.${VOICE.ext}`);
-    audio.volume = VOICE.volume;
-    currentAudio = audio;
-    // play() rejects on autoplay policy or a missing file.
-    audio.play().catch(() => {});
-  } catch (e){
-    /* no audio, no problem */
-  }
-}
-
-function stopVoiceLine(){
-  if (!currentAudio) return;
-  try {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-  } catch (e){}
-  currentAudio = null;
 }
 
 /* ---------------- Sequence ---------------- */
@@ -128,7 +88,8 @@ export function playReveal(step, kind, side, onDone){
   stage.appendChild(card);
   scrim?.classList.add("on");
 
-  playVoiceLine(hero, kind);
+  // Stinger first, then the hero's line just behind it.
+  playSelectionAudio(hero.slug, kind);
 
   // A ban is struck partway through the hold, so the hero reads
   // clearly before being shaken and drained of colour.
@@ -158,7 +119,7 @@ export function revealDuration(){
 /** Abort anything in flight and clear the stage. */
 export function cancelReveal(){
   clearTimers();
-  stopVoiceLine();
+  stopSelectionAudio();
   const stage = el("revealStage");
   const scrim = el("revealScrim");
   if (stage) stage.innerHTML = "";

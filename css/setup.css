@@ -8,20 +8,43 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--obsidian);
   z-index: 10;
   overflow-y: auto;
   padding: 24px;
+
+  background-color: var(--obsidian);
+  background-image: var(--bg-image);
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 #setup.hidden{ display: none; }
 
+/* Darkens the backdrop so the form reads clearly over it. */
+#setup::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 12, 0.74);
+}
+
 #setup .panel{
+  position: relative;   /* above the scrim */
+  z-index: 1;
   width: 400px;
   padding: 36px 40px;
   background: var(--obsidian-glass);
-  border: 1px solid var(--hairline);
+  border: 1px solid rgba(242, 239, 232, 0.14);
   border-radius: 4px;
+}
+
+/* Tournament logo above the title. */
+#setup .brand{
+  display: block;
+  width: 96px;
+  height: auto;
+  margin: 0 auto 16px;
 }
 
 #setup h1{
@@ -38,7 +61,7 @@
   margin: 0 0 24px;
   font-size: 13px;
   text-align: center;
-  color: var(--ink-dim);
+  color: var(--ink-light-dim);
 }
 
 /* ---------------- Fields ---------------- */
@@ -55,7 +78,7 @@
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-dim);
+  color: var(--ink-light-dim);
 }
 
 .field .label.amber-label{ color: var(--amber); }
@@ -65,9 +88,10 @@
   width: 100%;
   padding: 10px 12px;
   background: #000;
-  border: 1px solid var(--hairline);
+  border: 1px solid rgba(242, 239, 232, 0.22);
   border-radius: var(--radius);
-  color: var(--ink);
+  color: var(--ink-light);
+  caret-color: var(--ink-light);
   font-family: var(--font-body);
   font-size: 14px;
 }
@@ -75,6 +99,94 @@
 #setup input:focus{
   outline: none;
   border-color: var(--amber);
+  box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.18);
+}
+
+/* Chrome and Brave override the background on autofilled fields.
+   A large inset shadow is the only reliable way to keep them dark. */
+#setup input:-webkit-autofill,
+#setup input:-webkit-autofill:hover,
+#setup input:-webkit-autofill:focus{
+  -webkit-text-fill-color: var(--ink-light);
+  -webkit-box-shadow: 0 0 0 1000px #000 inset;
+  caret-color: var(--ink-light);
+}
+
+#setup input::selection{
+  background: var(--amber);
+  color: #1A1305;
+}
+
+/* ---------------- Volume sliders ---------------- */
+
+.slider-field .label{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.slider-field .val{
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0;
+  color: var(--amber);
+}
+
+/* The generic input rule above assumes a text box, so ranges need
+   most of it undone. */
+#setup input[type="range"]{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 18px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+#setup input[type="range"]:focus{
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+#setup input[type="range"]::-webkit-slider-runnable-track{
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(242, 239, 232, 0.16);
+}
+
+#setup input[type="range"]::-moz-range-track{
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(242, 239, 232, 0.16);
+}
+
+#setup input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: none;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+#setup input[type="range"]::-moz-range-thumb{
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+#setup input[type="range"]:focus-visible::-webkit-slider-thumb{
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.3);
 }
 
 #setup input.code{
@@ -85,7 +197,7 @@
   text-transform: uppercase;
 }
 
-#setup input::placeholder{ color: #4A4640; }
+#setup input::placeholder{ color: var(--ink-light-faint); }
 
 .field-row{
   display: grid;
@@ -109,7 +221,7 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--hairline);
+  background: rgba(242, 239, 232, 0.16);
 }
 
 .divider span{
@@ -117,7 +229,7 @@
   font-size: 9px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--ink-dim);
+  color: var(--ink-light-dim);
 }
 
 /* ---------------- Actions ---------------- */
@@ -126,7 +238,7 @@
   margin: 12px 0 0;
   font-size: 11px;
   line-height: 1.5;
-  color: #605B52;
+  color: var(--ink-light-faint);
 }
 
 #setup button{
@@ -152,7 +264,8 @@
   margin-top: 14px;
   font-size: 12px;
   text-align: center;
-  color: var(--ink-dim);
+  color: var(--ink-light-dim);
 }
 
-#setup .status.err{ color: var(--ban-red); }
+/* The palette's ban red is too dark to read on the panel. */
+#setup .status.err{ color: #E4707E; }

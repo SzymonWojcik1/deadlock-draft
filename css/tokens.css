@@ -5,15 +5,28 @@
 
 :root{
   /* Surfaces */
-  --bg:               #4A4A4E;      /* set to `transparent` for OBS overlay use */
+  --bg:               #4A4A4E;
   --obsidian:         #0A0A0F;
   --obsidian-glass:   rgba(10, 10, 15, 0.82);
   --panel:            rgba(214, 214, 214, 0.9);
   --slot-empty:       rgba(214, 214, 214, 0.85);
 
+  /* Broadcast backdrop. --bg sits underneath as a solid colour so
+     there's never a flash of nothing while the image loads.
+     For a transparent OBS overlay set --bg-image to `none` and
+     --bg to `transparent`. Path is relative to this file. */
+  --bg-image:         url("../assets/images/others/background.png");
+
   /* Text */
   --ink:              #16161A;
   --ink-dim:          #55525C;
+
+  /* Text for dark surfaces (the connect screen). The tokens above
+     are tuned for the overlay's light panels, so they're unreadable
+     on anything dark — use these there instead. */
+  --ink-light:        #F2EFE8;
+  --ink-light-dim:    #A5A093;
+  --ink-light-faint:  #6F6A5F;
 
   /* Team colours */
   --amber:            #C9A227;
@@ -43,7 +56,7 @@
   --ban-h:            180px;
 
   --centre-gap:       40px;    /* space between the two ban pairs */
-  --timer-size:       130px;
+  --timer-size:       150px;
 
   /* Hero name plates. Fixed width so every name occupies the same
      footprint; height follows each SVG's own proportions. */

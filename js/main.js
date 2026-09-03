@@ -7,6 +7,9 @@ import { loadHeroes } from "./heroes.js";
 import { connectToDraft } from "./socket.js";
 import { renderAll, renderTimerOnly, resetReveals } from "./render.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./config.js";
+import {
+  loadVolumes, setVolume, startMusic, stopAllAudio
+} from "./audio.js";
 
 const LABELS_KEY = "dl_overlay_labels";
 
@@ -72,6 +75,36 @@ function loadSavedLabels(){
   }
 }
 
+/* ---------------- Audio ---------------- */
+
+const SLIDERS = [
+  { channel: "master", input: "volMaster", readout: "volMasterVal" },
+  { channel: "music",  input: "volMusic",  readout: "volMusicVal"  },
+  { channel: "voice",  input: "volVoice",  readout: "volVoiceVal"  },
+  { channel: "sfx",    input: "volSfx",    readout: "volSfxVal"    }
+];
+
+function initVolumeSliders(){
+  const saved = loadVolumes();
+
+  for (const { channel, input, readout } of SLIDERS){
+    const slider = el(input);
+    const label  = el(readout);
+    if (!slider) continue;
+
+    const percent = Math.round((saved[channel] ?? 0) * 100);
+    slider.value = percent;
+    if (label) label.textContent = `${percent}%`;
+
+    slider.addEventListener("input", () => {
+      const value = Number(slider.value);
+      if (label) label.textContent = `${value}%`;
+      // Applies live, so the mix can be set while music is playing.
+      setVolume(channel, value / 100);
+    });
+  }
+}
+
 /* ---------------- Connection ---------------- */
 
 function connect(code){
@@ -81,6 +114,10 @@ function connect(code){
   // reconnecting to the same one does — clear either way so the
   // first paint never replays selections that already happened.
   resetReveals();
+
+  // Called from the Connect click, which is the user gesture that
+  // lets the browser play audio at all.
+  startMusic();
 
   connection = connectToDraft(code, {
     onDraftState(state){
@@ -102,6 +139,10 @@ function connect(code){
 async function init(){
   fitCanvas();
   window.addEventListener("resize", fitCanvas);
+  initVolumeSliders();
+
+  // Don't leave audio running if the page goes away.
+  window.addEventListener("pagehide", stopAllAudio);
 
   // Hero art can't resolve without the table, so load it first.
   try {

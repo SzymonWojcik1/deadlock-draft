@@ -335,6 +335,12 @@
 
 /* ---------------- Timer ---------------- */
 
+/*
+   An Art Deco brass plate rather than a plain ring: octagonal
+   frame, hour ticks and chevrons, in keeping with Deadlock's
+   1930s occult-noir look.
+*/
+
 .timer{
   position: absolute;
   top: 770px;
@@ -346,45 +352,87 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.55));
 }
 
-.timer-ring{
+.timer-face{
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  overflow: visible;   /* chevrons sit outside the viewBox edge */
 }
 
-.ring-bg{ stroke: rgba(237, 231, 217, 0.1); }
+.face-plate{
+  fill: url(#plate);
+  stroke: url(#brass);
+  stroke-width: 2;
+}
+
+.face-bevel{
+  fill: none;
+  stroke: rgba(232, 206, 138, 0.28);
+  stroke-width: 1;
+}
+
+.face-ticks .tick{
+  stroke: rgba(232, 206, 138, 0.45);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.face-ticks .tick.major{
+  stroke: rgba(232, 206, 138, 0.85);
+  stroke-width: 2.5;
+}
+
+.face-chevron{
+  fill: none;
+  stroke: url(#brass);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ring-bg{ stroke: rgba(232, 206, 138, 0.12); }
 
 .ring-fg{
   stroke: var(--amber);
   stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(201, 162, 39, 0.7));
 }
 
-.ring-fg.sapphire-active{ stroke: var(--sapphire); }
+.ring-fg.sapphire-active{
+  stroke: var(--sapphire);
+  filter: drop-shadow(0 0 3px rgba(62, 111, 196, 0.7));
+}
 
 .timer-center{
   position: relative;
   text-align: center;
+  z-index: 1;
 }
 
+/* Cream on the dark plate — the light-panel ink used before was
+   near-black here, which made the count all but invisible. */
 .timer-value{
   font-family: var(--font-mono);
-  font-size: 34px;
+  font-size: 40px;
   font-weight: 500;
   line-height: 1;
-  color: var(--ink);
+  color: var(--ink-light);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+  font-variant-numeric: tabular-nums;
 }
 
 .timer-phase{
-  margin-top: 5px;
+  margin-top: 6px;
   font-family: var(--font-display);
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-size: 9px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-dim);
-  max-width: 110px;
+  color: rgba(232, 206, 138, 0.7);
+  max-width: 96px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

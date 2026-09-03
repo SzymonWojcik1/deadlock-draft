@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Deadlock Draft Overlay</title>
 
+<link rel="icon" type="image/png" href="assets/images/others/logo.png">
+<link rel="apple-touch-icon" href="assets/images/others/logo.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -20,6 +23,7 @@
 <!-- Connection screen: hidden once a draft is joined -->
 <div id="setup">
   <div class="panel">
+    <img class="brand" src="assets/images/others/logo.png" alt="" />
     <h1>Deadlock Draft Overlay</h1>
     <p>Connect to a StatLocker draft</p>
 
@@ -47,6 +51,30 @@
     </div>
 
     <p class="hint">Leave blank to use whatever the draft lobby reports.</p>
+
+    <div class="divider"><span>Audio</span></div>
+
+    <label class="field slider-field">
+      <span class="label">Master <span class="val" id="volMasterVal">80%</span></span>
+      <input type="range" id="volMaster" min="0" max="100" step="1" value="80" />
+    </label>
+
+    <label class="field slider-field">
+      <span class="label">Music <span class="val" id="volMusicVal">50%</span></span>
+      <input type="range" id="volMusic" min="0" max="100" step="1" value="50" />
+    </label>
+
+    <label class="field slider-field">
+      <span class="label">Voice lines <span class="val" id="volVoiceVal">100%</span></span>
+      <input type="range" id="volVoice" min="0" max="100" step="1" value="100" />
+    </label>
+
+    <label class="field slider-field">
+      <span class="label">Effects <span class="val" id="volSfxVal">90%</span></span>
+      <input type="range" id="volSfx" min="0" max="100" step="1" value="90" />
+    </label>
+
+    <p class="hint">Music starts when you connect — browsers block audio until then.</p>
 
     <button id="connectBtn">Connect</button>
     <div class="status" id="statusMsg"></div>
@@ -82,12 +110,50 @@
 
     <!-- Timer, centred between the two pick rows -->
     <div class="timer" id="timer">
-      <svg class="timer-ring" viewBox="0 0 120 120" aria-hidden="true">
+      <svg class="timer-face" viewBox="0 0 120 120" aria-hidden="true">
+        <defs>
+          <linearGradient id="brass" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#E8CE8A"/>
+            <stop offset="45%"  stop-color="#C9A227"/>
+            <stop offset="100%" stop-color="#8A6E18"/>
+          </linearGradient>
+          <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#1B1B22"/>
+            <stop offset="100%" stop-color="#0A0A0F"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Octagonal plate with a brass bevel -->
+        <polygon class="face-plate" points="21,0 99,0 120,21 120,99 99,120 21,120 0,99 0,21"/>
+        <polygon class="face-bevel" points="24.9,6 95.1,6 114,24.9 114,95.1 95.1,114 24.9,114 6,95.1 6,24.9"/>
+
+        <!-- Hour-style ticks, quarters longer -->
+        <g class="face-ticks">
+          <line class="tick major" x1="60.0" y1="20.0" x2="60.0" y2="13.0"/>
+          <line class="tick"       x1="81.5" y1="22.8" x2="83.5" y2="19.3"/>
+          <line class="tick"       x1="97.2" y1="38.5" x2="100.7" y2="36.5"/>
+          <line class="tick major" x1="100.0" y1="60.0" x2="107.0" y2="60.0"/>
+          <line class="tick"       x1="97.2" y1="81.5" x2="100.7" y2="83.5"/>
+          <line class="tick"       x1="81.5" y1="97.2" x2="83.5" y2="100.7"/>
+          <line class="tick major" x1="60.0" y1="100.0" x2="60.0" y2="107.0"/>
+          <line class="tick"       x1="38.5" y1="97.2" x2="36.5" y2="100.7"/>
+          <line class="tick"       x1="22.8" y1="81.5" x2="19.3" y2="83.5"/>
+          <line class="tick major" x1="20.0" y1="60.0" x2="13.0" y2="60.0"/>
+          <line class="tick"       x1="22.8" y1="38.5" x2="19.3" y2="36.5"/>
+          <line class="tick"       x1="38.5" y1="22.8" x2="36.5" y2="19.3"/>
+        </g>
+
+        <!-- Countdown ring -->
         <circle class="ring-bg" cx="60" cy="60" r="54" fill="none" stroke-width="5"/>
         <circle class="ring-fg" id="timerRing" cx="60" cy="60" r="54" fill="none" stroke-width="5"
                 stroke-dasharray="339.3" stroke-dashoffset="0"
                 transform="rotate(-90 60 60)"/>
+
+        <!-- Deco chevrons, top and bottom -->
+        <path class="face-chevron" d="M52,10 L60,3 L68,10"/>
+        <path class="face-chevron" d="M52,110 L60,117 L68,110"/>
       </svg>
+
       <div class="timer-center">
         <div class="timer-value" id="timerValue">--</div>
         <div class="timer-phase" id="timerPhase">Waiting</div>

@@ -85,24 +85,73 @@ export const NAME_ASSET = "name";
 export const REVEAL_ASSET = "render";
 
 /* ------------------------------------------------------------
-   Voice lines
+   Audio
    ------------------------------------------------------------
-   Played at the start of a big reveal. Files are looked up by the
-   hero's slug, same as art: <dir>/<slug>.<ext>
+   Voice lines are looked up by hero slug, same as art:
+     <dir>/<slug>.<ext>     e.g. assets/voices/picks/Abrams.mp3
 
-   Missing files fail silently, so you can add them a few at a time.
-   Set `enabled: true` once some exist.
+   Music tracks are listed by filename (without extension) and
+   played back to back on a loop.
 
-   Note: a normal browser tab won't play audio until the page has
-   been clicked. OBS browser sources have no such restriction.
+   Missing files fail silently, so you can add them a few at a
+   time. Volumes multiply: effective = master × channel.
+
+   Note: a browser tab won't play audio until the page has been
+   clicked, so music starts on Connect. OBS browser sources have
+   no such restriction.
    ------------------------------------------------------------ */
 
-export const VOICE = {
-  enabled: false,
-  pickDir: "assets/audio/heroes/picks",
-  banDir:  "assets/audio/heroes/bans",
-  ext:     "mp3",
-  volume:  0.8
+export const AUDIO = {
+  /* Stingers played at the moment of a selection, just ahead of the
+     hero's voice line. One file per kind, not per hero. */
+  sfx: {
+    enabled: true,
+    dir:     "assets/audios/soundeffects",
+    ext:     "mp3",
+    files:   { pick: "Pick", ban: "Ban" },
+    /* Gap between the stinger landing and the voice line starting.
+       Tune by ear: too short and they talk over each other, too
+       long and the moment sags. */
+    voiceDelayMs: 380
+  },
+
+  voice: {
+    enabled: true,
+    pickDir: "assets/audios/picks",
+    banDir:  "assets/audios/bans",
+    ext:     "mp3",
+    /* Ban lines exist now, so use them. Set true to fall back to
+       the pick line whenever a ban file is missing. */
+    banFallsBackToPick: false
+  },
+
+  music: {
+    enabled: true,
+    dir:     "assets/audios/osts",
+    ext:     "mp3",
+    shuffle: true,
+    /* Filenames without extension. A single track loops seamlessly;
+       add more and they play back to back. */
+    tracks: ["ost1"]
+  },
+
+  /* Music dips under a selection so the stinger and voice line stay
+     audible. */
+  duck: {
+    level:     0.25,   // fraction of normal music volume
+    attackMs:  180,    // fade down
+    holdMs:    250,    // stay down after the line ends
+    releaseMs: 700     // fade back up
+  },
+
+  /* Starting slider positions, 0–1. Overridden by whatever the
+     user last set on the connect screen. */
+  defaults: {
+    master: 0.8,
+    music:  0.5,
+    voice:  1.0,
+    sfx:    0.9
+  }
 };
 
 /* ------------------------------------------------------------
